@@ -166,7 +166,7 @@ module YamlRecord
     # source 'foo' => <root>/foo.yml 
     # source => <root>/foo.yml 
     def self.source(file=nil)
-      file ? @file = (file + ".yml") : @file
+      file ? @file = (file.to_s + ".yml") : @file
     end
     
     def self.validates_each(*args, &block)
