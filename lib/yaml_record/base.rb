@@ -1,17 +1,17 @@
 module YamlRecord
-  class Base  
-    attr_accessor :attributes, :is_created, :is_destroyed 
-    
+  class Base
+    attr_accessor :attributes, :is_created, :is_destroyed
+
     include ActiveSupport::Callbacks
     define_callbacks :before_save, :after_save, :before_destroy, :after_destroy, :before_validation, :before_create, :after_create
-    
+
     before_create :set_id!
 
     # Constructs a new YamlRecord instance based on specified attribute hash
     #
     # === Example:
     #
-    #   class Post < YamlRecord::Base; properties :foo; end 
+    #   class Post < YamlRecord::Base; properties :foo; end
     #
     #   Post.new(:foo  => "bar")
     #
@@ -21,14 +21,13 @@ module YamlRecord
 
       self.attributes ||= {}
       self.is_created = attr_hash.delete(:persisted) || false
-      self.setup_properties!
       attr_hash.each do |k,v|
         self.send("#{k}=", v) # self.attributes[:media] = "foo"
       end
     end
 
     # Accesses given attribute from YamlRecord instance
-    # 
+    #
     # === Example:
     #
     #   @post[:foo] => "bar"
@@ -38,7 +37,7 @@ module YamlRecord
     end
 
     # Assign given attribute from YamlRecord instance with specified value
-    # 
+    #
     # === Example:
     #
     #   @post[:foo] = "baz"
@@ -50,7 +49,7 @@ module YamlRecord
     # Saved YamlRecord instance to file
     # Executes save and create callbacks
     # Returns true if record saved; false otherwise
-    # 
+    #
     # === Example:
     #
     #   @post.save => true
@@ -61,7 +60,7 @@ module YamlRecord
 
       existing_items = self.class.all
       if self.new_record?
-        existing_items << self 
+        existing_items << self
       else # update existing record
         updated_item = existing_items.find { |item| item.id == self.id }
         return false unless updated_item
@@ -69,7 +68,7 @@ module YamlRecord
       end
 
       raw_data = existing_items ? existing_items.map { |item| item.persisted_attributes } : []
-      self.class.write_contents(raw_data) if self.valid? 
+      self.class.write_contents(raw_data) if self.valid?
 
       run_callbacks(:after_create) unless self.is_created
       run_callbacks(:after_save)
@@ -77,10 +76,10 @@ module YamlRecord
     rescue IOError
       false
     end
-    
+
     # Update YamlRecord instance with specified attributes
     # Returns true if record updated; false otherwise
-    # 
+    #
     # === Example:
     #
     #   @post.update_attributes(:foo  => "baz", :miso => "awesome") => true
@@ -89,9 +88,9 @@ module YamlRecord
       updated_attrs.each { |k,v| self.send("#{k}=", v) }
       self.save
     end
-    
+
     # Returns array of instance attributes names; An attribute is a value stored for this record (persisted or not)
-    # 
+    #
     # === Example:
     #
     #   @post.column_names => ["foo", "miso"]
@@ -101,22 +100,22 @@ module YamlRecord
       self.attributes.each_key { |k| array << k.to_s }
       array
     end
-    
+
     # Returns hash of attributes to be persisted to file.
     # A persisted attribute is a value stored in the file (specified with the properties declaration)
-    # 
+    #
     # === Example:
     #
-    #   class Post < YamlRecord::Base; properties :foo, :miso; end 
+    #   class Post < YamlRecord::Base; properties :foo, :miso; end
     #   @post = Post.create(:foo => "bar", :miso => "great")
     #   @post.persisted_attributes => { :id => "a1b2c3", :foo => "bar", :miso => "great" }
     #
     def persisted_attributes
       self.attributes.slice(*self.class.properties).reject { |k, v| v.nil? }
     end
-    
+
     # Returns true if YamlRecord instance hasn't persisted; false otherwise
-    # 
+    #
     # === Example:
     #
     #   @post = Post.new(:foo => "bar", :miso => "great")
@@ -129,7 +128,7 @@ module YamlRecord
     end
 
     # Returns true if YamlRecord instance has been destroyed; false otherwise
-    # 
+    #
     # === Example:
     #
     #   @post = Post.new(:foo => "bar", :miso => "great")
@@ -144,7 +143,7 @@ module YamlRecord
 
     # Remove a persisted YamlRecord object
     # Returns true if destroyed; false otherwise
-    # 
+    #
     # === Example:
     #
     #   @post = Post.create(:foo => "bar", :miso => "great")
@@ -162,11 +161,11 @@ module YamlRecord
     rescue IOError
       false
     end
-    
+
     # Execute validations for instance
     # Returns true if record is valid; false otherwise
     # TODO Implement validation
-    # 
+    #
     # === Example:
     #
     #   @post.valid? => true
@@ -174,10 +173,10 @@ module YamlRecord
     def valid?
       true
     end
-    
+
     # Returns errors messages if record isn't valid; empty array otherwise
     # TODO Implement validation
-    # 
+    #
     # === Example:
     #
     #   @post.errors => ["Foo can't be blank"]
@@ -185,10 +184,10 @@ module YamlRecord
     def errors
       []
     end
-    
+
     # Returns YamlRecord Instance
     # Complies with ActiveModel api
-    # 
+    #
     # === Example:
     #
     #   @post.to_model => @post
@@ -196,9 +195,9 @@ module YamlRecord
     def to_model
       self
     end
-    
+
     # Reload YamlRecord instance attributes from file
-    # 
+    #
     # === Example:
     #
     #   @post = Post.create(:foo => "bar", :miso => "great")
@@ -214,7 +213,7 @@ module YamlRecord
 
     # Find YamlRecord instance given attribute name and expected value
     # Returns instance if found; false otherwise
-    # 
+    #
     # === Example:
     #
     #   Post.find_by_attribute(:foo, "bar")  => @post
@@ -222,17 +221,17 @@ module YamlRecord
     def self.find_by_attribute(attribute, expected_value)
       self.all.find do |record|
         value = record.send(attribute) if record.respond_to?(attribute)
-        value.is_a?(Array) ? 
+        value.is_a?(Array) ?
           value.include?(expected_value) :
           value == expected_value
       end
     end
-    
+
     class << self;
-      
+
       # Find YamlRecord instance given id
       # Returns instance if found; false otherwise
-      # 
+      #
       # === Example:
       #
       #   Post.find_by_id("a1b2c3")  => @post
@@ -242,10 +241,10 @@ module YamlRecord
       end
       alias :find :find_by_id
     end
-    
+
     # Returns collection of all YamlRecord instances
     # Caches results during request
-    # 
+    #
     # === Example:
     #
     #   Post.all  => [@post1, @post2, ...]
@@ -259,7 +258,7 @@ module YamlRecord
 
     # Find last YamlRecord instance given a limit
     # Returns an array of instances if found; empty otherwise
-    # 
+    #
     # === Example:
     #
     #   Post.last  => @post6
@@ -271,7 +270,7 @@ module YamlRecord
 
     # Find first YamlRecord instance given a limit
     # Returns an array of instances if found; empty otherwise
-    # 
+    #
     # === Example:
     #
     #   Post.first  => @post
@@ -280,60 +279,66 @@ module YamlRecord
     def self.first(limit=1)
       limit == 1 ? self.all.first : self.all.first(limit)
     end
-    
+
     # Initializes YamlRecord instance given an attribute hash and saves afterwards
     # Returns instance if successfully saved; false otherwise
-    # 
+    #
     # === Example:
     #
     #   Post.create(:foo => "bar", :miso => "great")  => @post
     #
     def self.create(attributes={})
       @fs = self.new(attributes)
-      if @fs.save == true 
+      if @fs.save == true
         @fs.is_created = true;
         @fs
       else
         false
       end
     end
-    
+
     # Declares persisted attributes for YamlRecord class
-    # 
+    #
     # === Example:
     #
     #   class Post < YamlRecord::Base; properties :foo, :miso; end
     #   Post.create(:foo => "bar", :miso => "great")  => @post
     #
     def self.properties(*names)
-      names = names | [:id] if names.size > 0
-      names.size == 0 ? @_properties : @_properties = names
+      @_properties ||= []
+      if names.size == 0 # getter
+        @_properties
+      elsif names.size > 0 # setter
+        names = names | [:id]
+        setup_properties!(*names)
+        @_properties += names
+      end
     end
-    
+
     # Declares source file for YamlRecord class
-    # 
+    #
     # === Example:
     #
-    #   class Post < YamlRecord::Base 
+    #   class Post < YamlRecord::Base
     #     source "path/to/yaml/file"
     #   end
     #
     def self.source(file=nil)
       file ? @file = (file.to_s + ".yml") : @file
     end
-    
+
     protected
-    
+
     # Validates each persisted attributes
     # TODO Implement validation
     #
     def self.validates_each(*args, &block)
       true
     end
-    
+
     # Write raw yaml data to file
     # Protected method, not called during usage
-    # 
+    #
     # === Example:
     #
     #   Post.write_content([{ :foo => "bar"}, { :foo => "baz"}, ...]) # writes to source file
@@ -342,27 +347,26 @@ module YamlRecord
       File.open(self.source, 'w') {|f| f.write(raw_data.to_yaml) }
       @records = nil
     end
-    
+
     # Creates reader and writer methods for each persisted attribute
     # Protected method, not called during usage
-    # 
+    #
     # === Example:
     #
-    #   Post.setup_properties!
+    #   Post.setup_properties!(:foo)
     #   @post.foo = "baz"
     #   @post.foo => "baz"
     #
-    def setup_properties!
-     self.class.properties.each do |name|
-        self.class_eval do
-          define_method(name) { self[name.to_sym] }  # def media; self.attributes[:media]; end
-          define_method("#{name}=") { |val| self[name.to_sym] = val  }  # def media; self.attributes[:media]; end
-        end
+    def self.setup_properties!(*names)
+      names.each do |name|
+        define_method(name) { self[name.to_sym] }
+        define_method("#{name}=") { |val| self[name.to_sym] = val  }
       end
     end
-    
+
     # Assign YamlRecord a unique id if not set
     # Invoke before create of an instance
+    # Protected method, not called during usage
     #
     def set_id!
       self.id = ActiveSupport::SecureRandom.hex(15)
