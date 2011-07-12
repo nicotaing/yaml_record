@@ -171,6 +171,10 @@ Created at Miso by Nico Taing and Nathan Esquenazi
 
 Contributors and patches are welcome! Please send a pull request!
 
+## Notes ##
+
+There is already an excellent project for YAML persistence if you are using [Datamapper](https://github.com/datamapper/dm-yaml-adapter). In the situation in which we were using DM and [Padrino](http://padrinorb.com), this would surely be a better choice. But if you are using ActiveRecord and Rails, this library is a lightweight and standalone solution.
+
 ## License ##
 
 YAML Record is Copyright © 2011 Nico Taing, Miso. It is free software, and may be redistributed under the terms specified in the MIT-LICENSE file.
