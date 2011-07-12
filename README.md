@@ -101,6 +101,7 @@ class Submission < YamlRecord::Base
     # something here
   end
 end
+```
 
 ## Example ##
 
