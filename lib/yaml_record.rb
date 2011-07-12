@@ -1,0 +1,3 @@
+module YamlRecord
+  # Your code goes here...
+end
