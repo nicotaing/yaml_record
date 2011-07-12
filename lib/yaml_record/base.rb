@@ -212,11 +212,13 @@ module YamlRecord
     end
 
     # Find YamlRecord instance given attribute name and expected value
+    # Supports checking inclusion for array based values
     # Returns instance if found; false otherwise
     #
     # === Example:
     #
-    #   Post.find_by_attribute(:foo, "bar")  => @post
+    #   Post.find_by_attribute(:foo, "bar")         => @post
+    #   Post.find_by_attribute(:some_list, "item")  => @post
     #
     def self.find_by_attribute(attribute, expected_value)
       self.all.find do |record|
