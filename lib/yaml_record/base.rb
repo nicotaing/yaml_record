@@ -252,12 +252,9 @@ module YamlRecord
     #   Post.all  => [@post1, @post2, ...]
     #   Post.all(true) => (...force reload...)
     #
-    def self.all(reload=false)
-      self.reload! if reload
-      @records ||= begin
-        raw_items = YAML.load_file(source) || []
-        raw_items.map { |item| self.new(item.merge(:persisted => true)) }
-      end
+    def self.all
+      raw_items = YAML.load_file(source) || []
+      raw_items.map { |item| self.new(item.merge(:persisted => true)) }
     end
 
     # Find last YamlRecord instance given a limit
@@ -282,16 +279,6 @@ module YamlRecord
     #
     def self.first(limit=1)
       limit == 1 ? self.all.first : self.all.first(limit)
-    end
-
-    # Forces a reload of all the cached yaml records for this type
-    #
-    # === Example:
-    #
-    #   Post.reload!
-    #
-    def self.reload!
-      @records = nil
     end
 
     # Initializes YamlRecord instance given an attribute hash and saves afterwards
