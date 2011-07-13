@@ -250,11 +250,13 @@ module YamlRecord
     # === Example:
     #
     #   Post.all  => [@post1, @post2, ...]
+    #   Post.all(true) => (...force reload...)
     #
-    def self.all
+    def self.all(reload=false)
+      @records = nil if reload
       @records ||= begin
-        raw_items = YAML.load_file(source)
-        raw_items ? raw_items.map { |item| self.new(item.merge(:persisted => true)) } : []
+        raw_items = YAML.load_file(source) || []
+        raw_items.map { |item| self.new(item.merge(:persisted => true)) }
       end
     end
 
@@ -327,6 +329,12 @@ module YamlRecord
     #
     def self.source(file=nil)
       file ? @file = (file.to_s + ".yml") : @file
+    end
+
+    # Overrides equality to match if matching ids
+    #
+    def ==(comparison_record)
+      self.id == comparison_record.id
     end
 
     protected
