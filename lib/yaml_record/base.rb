@@ -196,6 +196,17 @@ module YamlRecord
       self
     end
 
+    # Returns the instance of a record as a parameter
+    # By default return an id
+    #
+    # === Example:
+    #
+    #   @post.to_param => <id>
+    #
+    def to_param
+      self.id
+    end
+
     # Reload YamlRecord instance attributes from file
     #
     # === Example:
