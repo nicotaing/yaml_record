@@ -1,11 +1,27 @@
+# coding: utf-8
+
+require 'yaml'
+require 'securerandom'
+
+require 'active_support'
+require 'active_support/core_ext/kernel'
+require 'active_support/core_ext/class'
+require 'active_support/core_ext/hash'
+
+require 'active_model'
+
 module YamlRecord
   class Base
-    attr_accessor :attributes, :is_created, :is_destroyed
+    include ActiveModel::Validations
+    extend ActiveModel::Naming # Required dependency for ActiveModel::Errors
+    extend ActiveModel::Callbacks
 
-    include ActiveSupport::Callbacks
-    define_callbacks :before_save, :after_save, :before_destroy, :after_destroy, :before_validation, :before_create, :after_create
+    define_model_callbacks :save, :create, :destroy, :only => [:after, :before]
 
     before_create :set_id!
+
+    attr_accessor :attributes, :is_created, :is_destroyed
+    attr_reader   :errors
 
     # Constructs a new YamlRecord instance based on specified attribute hash
     #
@@ -24,6 +40,8 @@ module YamlRecord
       attr_hash.each do |k,v|
         self.send("#{k}=", v) # self.attributes[:media] = "foo"
       end
+
+      @errors = ActiveModel::Errors.new(self)
     end
 
     # Accesses given attribute from YamlRecord instance
@@ -55,23 +73,23 @@ module YamlRecord
     #   @post.save => true
     #
     def save
-      run_callbacks(:before_save)
-      run_callbacks(:before_create) unless self.is_created
+      block = lambda do
+        run_callbacks(:save) do
+          existing_items = self.class.all
+          if self.new_record?
+            existing_items << self
+          else # update existing record
+            updated_item = existing_items.find { |item| item.id == self.id }
+            return false unless updated_item
+            updated_item.attributes = self.attributes
+          end
 
-      existing_items = self.class.all
-      if self.new_record?
-        existing_items << self
-      else # update existing record
-        updated_item = existing_items.find { |item| item.id == self.id }
-        return false unless updated_item
-        updated_item.attributes = self.attributes
+          raw_data = existing_items ? existing_items.map { |item| item.persisted_attributes } : []
+          self.class.write_contents(raw_data) if self.valid?
+        end
       end
 
-      raw_data = existing_items ? existing_items.map { |item| item.persisted_attributes } : []
-      self.class.write_contents(raw_data) if self.valid?
-
-      run_callbacks(:after_create) unless self.is_created
-      run_callbacks(:after_save)
+      self.is_created ? block.call : run_callbacks(:create) { block.call }
       true
     rescue IOError
       false
@@ -152,37 +170,16 @@ module YamlRecord
     #   Post.all.size => 0
     #
     def destroy
-      run_callbacks(:before_destroy)
-      new_data = self.class.all.reject { |item| item.persisted_attributes == self.persisted_attributes }.map { |item| item.persisted_attributes }
-      self.class.write_contents(new_data)
-      self.is_destroyed = true
-      run_callbacks(:after_destroy)
+      run_callbacks(:destroy) do
+        new_data = self.class.all
+          .reject { |item| item.persisted_attributes == self.persisted_attributes }
+          .map { |item| item.persisted_attributes }
+        self.class.write_contents(new_data)
+        self.is_destroyed = true
+      end
       true
     rescue IOError
       false
-    end
-
-    # Execute validations for instance
-    # Returns true if record is valid; false otherwise
-    # TODO Implement validation
-    #
-    # === Example:
-    #
-    #   @post.valid? => true
-    #
-    def valid?
-      true
-    end
-
-    # Returns errors messages if record isn't valid; empty array otherwise
-    # TODO Implement validation
-    #
-    # === Example:
-    #
-    #   @post.errors => ["Foo can't be blank"]
-    #
-    def errors
-      []
     end
 
     # Returns YamlRecord Instance
@@ -240,7 +237,7 @@ module YamlRecord
       end
     end
 
-    class << self;
+    class << self
 
       # Find YamlRecord instance given id
       # Returns instance if found; false otherwise
@@ -264,7 +261,12 @@ module YamlRecord
     #   Post.all(true) => (...force reload...)
     #
     def self.all
-      raw_items = YAML.load_file(source) || []
+      begin
+        raw_items = YAML.load_file(source)
+      rescue Errno::ENOENT
+      ensure
+        raw_items ||= []
+      end
       raw_items.map { |item| self.new(item.merge(:persisted => true)) }
     end
 
@@ -347,13 +349,6 @@ module YamlRecord
 
     protected
 
-    # Validates each persisted attributes
-    # TODO Implement validation
-    #
-    def self.validates_each(*args, &block)
-      true
-    end
-
     # Write raw yaml data to file
     # Protected method, not called during usage
     #
@@ -387,7 +382,7 @@ module YamlRecord
     # Protected method, not called during usage
     #
     def set_id!
-      self.id = ActiveSupport::SecureRandom.hex(15)
+      self.id ||= SecureRandom.hex(15)
     end
   end
 end
