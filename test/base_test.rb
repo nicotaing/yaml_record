@@ -32,7 +32,7 @@ class BaseTest < Test::Unit::TestCase
   context "for instance methods" do
 
     context "for [] method" do
-      should("get  attribute with [attribute]"){ assert_equal @fs.title, @fs[:title] }
+      should("get attribute with [attribute]"){ assert_equal @fs.title, @fs[:title] }
     end
 
     context "for []= method" do
