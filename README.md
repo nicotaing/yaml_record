@@ -20,6 +20,8 @@ Or add gem to your Gemfile:
 
     # Gemfile
     gem 'yaml_record'
+    # OR if you're using Rails 3.1
+    gem 'yaml_record' :git => "git@github.com:Nico-Taing/yaml_record.git", :branch => "rail31"
 
 ## Usage ##
 
@@ -168,6 +170,8 @@ And that's all! Each record will be persisted to the source file for easy access
 ## Contributors ##
 
 Created at Miso by Nico Taing and Nathan Esquenazi
+
+Special thanks to [Vaudoc](https://github.com/vaudoc)
 
 Contributors and patches are welcome! Please send a pull request!
 
