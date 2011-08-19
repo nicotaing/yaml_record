@@ -264,7 +264,7 @@ module YamlRecord
     #   Post.all(true) => (...force reload...)
     #
     def self.all
-      raw_items = YAML.load_file(source) || []
+      raw_items = self.adapter.read(self.source) || []
       raw_items.map { |item| self.new(item.merge(:persisted => true)) }
     end
 
@@ -327,6 +327,20 @@ module YamlRecord
       end
     end
 
+    # Declares or retrieves adapter for Yaml storage
+    # Returns an instance of an adapter
+    #
+    # === Example:
+    #
+    #   class Post < YamlRecord::Base
+    #     adapter :redis, @redis #  => YamlRecord::Adapters::RedisAdapter
+    #   end
+    #
+    def self.adapter(kind=nil, *options)
+      kind.nil? ? @_adapter_kind ||= :local : @_adapter_kind = kind
+      @_adapter ||= eval("YamlRecord::Adapters::#{@_adapter_kind.to_s.capitalize}Store").new(*options)
+    end
+
     # Declares source file for YamlRecord class
     #
     # === Example:
@@ -362,7 +376,7 @@ module YamlRecord
     #   Post.write_content([{ :foo => "bar"}, { :foo => "baz"}, ...]) # writes to source file
     #
     def self.write_contents(raw_data)
-      File.open(self.source, 'w') {|f| f.write(raw_data.to_yaml) }
+      self.adapter.write(self.source, raw_data)
       @records = nil
     end
 

@@ -177,6 +177,29 @@ class BaseTest < Test::Unit::TestCase
       should("set @fs_not_created is_created field  to false"){ assert_false @fs_not_created.is_created }
     end
 
+    context "for self.adapter method" do
+      should("return local adapter") do
+        class YamlOtherObject < YamlRecord::Base; end
+        assert_kind_of YamlRecord::Adapters::LocalStore, YamlOtherObject.adapter
+      end
+      should("support explicit local adapter") do
+        YamlObject.adapter(:local)
+        assert_kind_of YamlRecord::Adapters::LocalStore, YamlObject.adapter
+      end
+      should("support changing adapter") do
+        class YamlRedisObject < YamlRecord::Base; end
+        @object = Object.new
+        YamlRedisObject.adapter(:redis, @object)
+        assert_kind_of YamlRecord::Adapters::RedisStore, YamlRedisObject.adapter
+        assert_equal @object, YamlRedisObject.adapter.client
+        class YamlOtherObject < YamlRecord::Base; end
+        assert_kind_of YamlRecord::Adapters::LocalStore, YamlOtherObject.adapter
+      end
+      should("not support invalid adapter") do
+        assert_raise(NameError) { class YamlFakeObject < YamlRecord::Base; adapter(:fake); end }
+      end
+    end
+
     context "for set_id!" do
       setup do
         @fs_no_id = YamlObject.new(@attr)
