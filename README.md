@@ -14,14 +14,18 @@ There are many cases where YAMLRecord is **not the correct** persistence strateg
 
 Install using rubygems:
 
-    gem install yaml_record
+```bash
+gem install yaml_record
+```
 
 Or add gem to your Gemfile:
 
-    # Gemfile
-    gem 'yaml_record'
-    # OR if you're using Rails 3.1
-    gem 'yaml_record' :git => "git@github.com:Nico-Taing/yaml_record.git", :branch => "rails31"
+```ruby
+# Gemfile
+gem 'yaml_record'
+# OR if you're using Rails 3.1
+gem 'yaml_record' :git => "git@github.com:Nico-Taing/yaml_record.git", :branch => "rails31"
+```
 
 ## Usage ##
 
