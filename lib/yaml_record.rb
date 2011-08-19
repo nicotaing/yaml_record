@@ -7,4 +7,6 @@ require 'yaml'
 
 module YamlRecord
   require File.dirname(__FILE__) + "/yaml_record/base"
+  require File.dirname(__FILE__) + "/yaml_record/adapters/redis_store"
+  require File.dirname(__FILE__) + "/yaml_record/adapters/local_store"
 end
