@@ -34,6 +34,9 @@ class Post < YamlRecord::Base
   # Declare your properties
   properties :title, :body, :user_id
 
+  # Declare your adapter (local by default)
+  adapter :local # or :redis
+  
   # Declare source file path
   source Rails.root.join("config/posts")
 end
@@ -107,8 +110,8 @@ end
 
 ## Storage Adapters ##
 
-YAMLRecord support pluggable storage adapters that change the storage engine for the YAML data. By default, the adapter used is the 
-'local' store which writes a file (specified by `source` path) to the local system. There are currently two available adapters: `Local` and `Redis`. 
+YAMLRecord supports pluggable storage adapters that control the storage engine used for the YAML data. By default, the adapter used is the 
+`local` store which writes a file (specified by `source` path) to the local system. There are currently two available adapters: `Local` and `Redis`. 
 
 To configure the adapter, you can simply declare within the object:
 
@@ -119,6 +122,8 @@ class Submission < YamlRecord::Base
 end
 ```
 
+Each storage adapter only defines a `read` and `write` interface and is easy to create. 
+Checkout the [redis adapter](https://github.com/Nico-Taing/yaml_record/blob/master/lib/yaml_record/adapters/redis_store.rb) for an example of how simple they are to define.
 Feel free to create additional adapters and send them to us via a pull request.
 
 ## Example ##
@@ -130,7 +135,7 @@ class Submission < YamlRecord::Base
   # Declare your properties
   properties :name, :email, :body
 
-  # Choose your adapter (local by default)
+  # Declare your adapter (local by default)
   adapter :local # or :redis
   
   # Declare source file path (config/contact.yml)
