@@ -1,7 +1,8 @@
 require File.dirname(__FILE__) + '/test_helper'
 
 class YamlObject < YamlRecord::Base
-  properties :title, :body, :child_ids
+  properties :title, :body, :age
+  attribute :child_ids, Array
   source File.dirname(__FILE__) + "/../tmp/yaml_object"
 end
 
@@ -16,13 +17,15 @@ class BaseTest < Test::Unit::TestCase
     @attr = {
       :child_ids  =>  [@obj_id],
       :title =>  @obj_title,
-      :body => "Body!!"
+      :body => "Body!!",
+      :age => 27
     }
 
     @attr2 = {
       :child_ids  =>  [@obj2_id],
       :title =>  @obj2_title,
-      :body => "Body!!"
+      :body => "Body!!",
+      :age => 35
     }
 
     clean_yaml_record(YamlObject)
@@ -30,6 +33,17 @@ class BaseTest < Test::Unit::TestCase
   end
 
   context "for instance methods" do
+
+    context "for accessing attribute with method" do
+      should("return title"){ assert_equal @obj_title, @fs.title }
+      should("return age") { assert_equal 27, @fs.age }
+    end
+
+    context "for setting attribute with method" do
+      setup { @fs.title = "Toto"; @fs.age = 36 }
+      should("set title"){ assert_equal "Toto", @fs.title }
+      should("set age"){ assert_equal 36, @fs.age }
+    end
 
     context "for [] method" do
       should("get  attribute with [attribute]"){ assert_equal @fs.title, @fs[:title] }
@@ -39,7 +53,7 @@ class BaseTest < Test::Unit::TestCase
       setup do
         @fs[:title] = "Toto"
       end
-      should("set attribute with [attribute]="){ assert_equal @fs[:title], "Toto" }
+      should("set attribute with [attribute]="){ assert_equal "Toto", @fs[:title] }
     end
 
     context "for save method" do
@@ -53,19 +67,20 @@ class BaseTest < Test::Unit::TestCase
 
     context "for update_attributes method" do
       setup do
-        @fs.update_attributes(:title => "Toto", :body  => "http://somewhereelse.com")
+        @fs.update_attributes(:title => "Toto", :body  => "http://somewhereelse.com", :age => 56)
         @fs.reload
       end
-      should("update title") { assert_equal @fs.title, "Toto" }
-      should("update body") { assert_equal @fs.body, "http://somewhereelse.com"  }
+      should("update title") { assert_equal "Toto", @fs.title }
+      should("update body") { assert_equal "http://somewhereelse.com", @fs.body }
+      should("update age") { assert_equal 56, @fs.reload.age }
     end
 
     context "for column_names method" do
-      should("return an array with attributes names") { assert_equal @fs.column_names.sort!, YamlObject.properties.map { |p| p.to_s }.sort! }
+      should("return an array with attributes names") { assert_equal @fs.column_names.sort!, YamlObject.attribute_names.map { |p| p.to_s }.sort! }
     end
 
     context "for persisted_attributes method" do
-      should("return persisted attributes") { assert_equal [:title, :body, :child_ids, :id ].sort_by {|sym| sym.to_s}, @fs.persisted_attributes.keys.sort_by {|sym| sym.to_s} }
+      should("return persisted attributes") { assert_equal [:title, :body, :child_ids, :age, :id ].sort_by {|sym| sym.to_s}, @fs.persisted_attributes.keys.sort_by {|sym| sym.to_s} }
     end
 
     context "for new_record? method" do
