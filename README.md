@@ -40,13 +40,54 @@ class Post < YamlRecord::Base
 
   # Declare your adapter (local by default)
   adapter :local # or :redis
-  
+
   # Declare source file path
   source Rails.root.join("config/posts")
 end
 ```
 
 Use this new object the same way as any ActiveRecord object.
+
+### Properties ###
+
+You can define properties for your records, with the simple `properties` method:
+
+```ruby
+class Post < YamlRecord::Base
+  # Declare your properties here
+  properties :title, :body, :user_id
+end
+```
+
+This means that the property will not be typecasted:
+
+```ruby
+@post = Post.new
+@post.title = "Hello"
+@post.title # => "Hello"
+```
+
+In addition, YamlRecord supports typecasted attributes with:
+
+```ruby
+class Post < YamlRecord::Base
+  # Declare your properties here
+  property :title, String
+  property :body, String
+  property :user_id, Integer
+  property :child_ids, Array[Integer]
+end
+```
+
+which will cast values to ensure they are stored as expected:
+
+```ruby
+@post = Post.new
+@post.user_id = "5"
+@post.user_id # => 5
+```
+
+And that's all you need to know about properties!
 
 ### Retrieval ###
 
@@ -114,8 +155,8 @@ end
 
 ## Storage Adapters ##
 
-YAMLRecord supports pluggable storage adapters that control the storage engine used for the YAML data. By default, the adapter used is the 
-`local` store which writes a file (specified by `source` path) to the local system. There are currently two available adapters: `Local` and `Redis`. 
+YAMLRecord supports pluggable storage adapters that control the storage engine used for the YAML data. By default, the adapter used is the
+`local` store which writes a file (specified by `source` path) to the local system. There are currently two available adapters: `Local` and `Redis`.
 
 To configure the adapter, you can simply declare within the object:
 
@@ -126,7 +167,7 @@ class Submission < YamlRecord::Base
 end
 ```
 
-Each storage adapter only defines a `read` and `write` interface and is easy to create. 
+Each storage adapter only defines a `read` and `write` interface and is easy to create.
 Checkout the [redis adapter](https://github.com/Nico-Taing/yaml_record/blob/master/lib/yaml_record/adapters/redis_store.rb) for an example of how simple they are to define.
 Feel free to create additional adapters and send them to us via a pull request.
 
@@ -141,7 +182,7 @@ class Submission < YamlRecord::Base
 
   # Declare your adapter (local by default)
   adapter :local # or :redis
-  
+
   # Declare source file path (config/contact.yml)
   source Rails.root.join("config/contact")
 end

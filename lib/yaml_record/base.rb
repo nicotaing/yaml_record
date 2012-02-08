@@ -209,7 +209,6 @@ module YamlRecord
     #########################
     ##### CLASS METHODS #####
     #########################
-
     class << self
       # Find YamlRecord instance given id
       # Returns instance if found; false otherwise
