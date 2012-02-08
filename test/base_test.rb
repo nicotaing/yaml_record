@@ -3,6 +3,7 @@ require File.dirname(__FILE__) + '/test_helper'
 class YamlObject < YamlRecord::Base
   properties :title, :body, :age
   property :child_ids, Array
+  property :number, Integer
   source File.dirname(__FILE__) + "/../tmp/yaml_object"
 end
 
@@ -43,6 +44,11 @@ class BaseTest < Test::Unit::TestCase
       setup { @fs.title = "Toto"; @fs.age = 36 }
       should("set title"){ assert_equal "Toto", @fs.title }
       should("set age"){ assert_equal 36, @fs.age }
+    end
+
+    context "for setting attribute with casted method" do
+      setup { @fs.number = "142"}
+      should("store as integer"){ assert_equal 142, @fs.number }
     end
 
     context "for [] method" do
