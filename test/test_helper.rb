@@ -1,13 +1,12 @@
-require 'rubygems'
-require 'test/unit'
+require 'minitest/autorun'
 require 'shoulda'
-require File.dirname(__FILE__) + "/../lib/yaml_record"
+require 'yaml_record'
 
-class Test::Unit::TestCase
+class Minitest::Test
   def clean_yaml_record(class_record)
     File.open(class_record.source, 'w') {|f| f.write(nil) }
   end
-  
+
   # Asserts that the condition is not true
   # assert_false @title == "hey"
   def assert_false(condition, message=nil)

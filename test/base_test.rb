@@ -5,7 +5,7 @@ class YamlObject < YamlRecord::Base
   source File.dirname(__FILE__) + "/../tmp/yaml_object"
 end
 
-class BaseTest < Test::Unit::TestCase
+class BaseTest < Minitest::Test
 
   def setup
     @obj_title = "Simple Title"
@@ -48,7 +48,7 @@ class BaseTest < Test::Unit::TestCase
         @fs2.save
       end
 
-      should("save on yaml file"){ assert_equal YamlObject.last.attributes.diff(@attr), {:id => @fs2.reload.id } }
+      should("save on yaml file"){ assert_equal YamlObject.last.id, @fs2.reload.id }
     end
 
     context "for update_attributes method" do
@@ -196,7 +196,7 @@ class BaseTest < Test::Unit::TestCase
         assert_kind_of YamlRecord::Adapters::LocalStore, YamlOtherObject.adapter
       end
       should("not support invalid adapter") do
-        assert_raise(NameError) { class YamlFakeObject < YamlRecord::Base; adapter(:fake); end }
+        assert_raises(NameError) { class YamlFakeObject < YamlRecord::Base; adapter(:fake); end }
       end
     end
 
