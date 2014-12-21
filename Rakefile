@@ -1,10 +1,8 @@
-require 'bundler'
-include Rake::DSL
-
-Bundler::GemHelper.install_tasks
-
+require 'bundler/gem_tasks'
 require 'rake/testtask'
-Rake::TestTask.new("test") do |test|
-  test.pattern = "test/**/*_test.rb"
-  test.verbose = true
+
+Rake::TestTask.new do |t|
+  t.test_files = FileList['test/*_test.rb']
 end
+
+task default: :test

@@ -5,7 +5,7 @@ module YamlRecord
     include ActiveSupport::Callbacks
     define_callbacks :before_save, :after_save, :before_destroy, :after_destroy, :before_validation, :before_create, :after_create
 
-    before_create :set_id!
+    set_callback :before_create, :before, :set_id!
 
     # Constructs a new YamlRecord instance based on specified attribute hash
     #
@@ -401,7 +401,7 @@ module YamlRecord
     # Protected method, not called during usage
     #
     def set_id!
-      self.id = ActiveSupport::SecureRandom.hex(15)
+      self.id = SecureRandom.hex(15)
     end
   end
 end
