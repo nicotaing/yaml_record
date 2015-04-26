@@ -1,6 +1,7 @@
 require 'active_support'
 require 'active_support/callbacks'
 require 'active_support/core_ext/hash'
+require 'securerandom'
 require 'yaml'
 
 require 'yaml_record/version'
